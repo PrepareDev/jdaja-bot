@@ -5,6 +5,7 @@ import { CommandContextExtn } from 'telegraf/typings/telegram-types';
 import isValidUrl from '../common/helpers/is-valid-url.helper';
 import { FormatterService } from '../services/formatter/formatter.service';
 import { Logger } from '@nestjs/common';
+import { GramjsService } from '../services/gramjs/gramjs.service';
 
 @Update()
 export class BotCommands {
@@ -12,8 +13,22 @@ export class BotCommands {
   constructor(
     private readonly ozonParser: OzonParser,
     private readonly formatter: FormatterService,
+    private readonly gram: GramjsService
   ) {}
+  @Command("all")
+  public async all(@Ctx() ctx: Context & CommandContextExtn){
+    if (!ctx.chat){
+      await ctx.sendMessage("BYE BYE TUTUUTTUUTTU")
+    }
+    const users = await this.gram.getChatMembers(String(ctx.message?.chat.id))
+    const msg = users.join(" ")
 
+    await ctx.sendMessage(msg, {
+      message_thread_id:ctx.message?.message_thread_id
+    })
+
+  }
+  
   @Command('book')
   public async parseBook(@Ctx() ctx: Context & CommandContextExtn) {
     try {

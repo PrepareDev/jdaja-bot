@@ -23,4 +23,6 @@ EXPOSE ${BOT_TOKEN}
 EXPOSE ${API_ID}
 EXPOSE ${API_HASH}
 
+EXPOSE 3000
+
 CMD [ "node", "dist/main.js" ]

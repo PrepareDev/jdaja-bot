@@ -19,4 +19,8 @@ COPY . .
 
 RUN npm run build
 
+EXPOSE ${BOT_TOKEN}
+EXPOSE ${API_ID}
+EXPOSE ${API_HASH}
+
 CMD [ "node", "dist/main.js" ]

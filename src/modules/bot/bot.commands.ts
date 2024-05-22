@@ -386,6 +386,8 @@ STATUS: FINISHED | TODO | IN_PROGRESS
 /updateStatus taskId:NUMBER status:STATUS - обновить статус задачи
 /finish taskId:NUMBER - завершить задачу
 /workOn taskId:NUMBER - взять задачу в работу
+/projects - Получить список проектов
+/addToProject taskId:NUMBER projectId:NUMBER - Добавить задачу в проект
 `);
     } catch (e) {
       this.logger.error(`[HELP] Message: ${ctx.text}\nError: ${e}`);

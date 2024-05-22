@@ -6,6 +6,8 @@ import { OzonParser } from '../services/ozon-parser/ozon-parser.service';
 import { FormatterService } from '../services/formatter/formatter.service';
 import { GramjsService } from '../services/gramjs/gramjs.service';
 import { TelegramClient } from 'telegram';
+import { TaskModule } from '../tasks/tasks.module';
+import { BotService } from './bot.service';
 
 @Module({
   imports: [
@@ -17,8 +19,15 @@ import { TelegramClient } from 'telegram';
         token: config.getOrThrow<string>('BOT_TOKEN'),
       }),
     }),
+    TaskModule,
   ],
   // Commands
-  providers: [BotCommands, OzonParser, FormatterService, GramjsService],
+  providers: [
+    BotCommands,
+    OzonParser,
+    FormatterService,
+    GramjsService,
+    BotService,
+  ],
 })
 export class BotModule {}

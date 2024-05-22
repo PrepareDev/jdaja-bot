@@ -99,11 +99,11 @@ export class BotCommands {
   @Command('addTask')
   public async addTask(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const flags = this.service.parseFlags(ctx.payload.split(' '));
+      const title = ctx.payload.trim();
 
-      if (!flags?.title) {
+      if (title.length < 1) {
         await ctx.sendMessage(
-          'You should provide title flag\nUSAGE: /addTask title:TITLE',
+          'You should provide `title` as positional argument\nUSAGE: /addTask TITLE',
           {
             message_thread_id: ctx.message?.message_thread_id,
           },
@@ -112,9 +112,8 @@ export class BotCommands {
       }
 
       const createdTask = await this.taskService.addTask(
-        flags.title,
+        title,
         ctx.from!.username ?? ctx.from!.first_name,
-        flags['project_id'] as any,
       );
 
       await ctx.sendMessage('Task with id ' + createdTask.id + ' created', {
@@ -352,6 +351,7 @@ export class BotCommands {
             message_thread_id: ctx.message?.message_thread_id,
           },
         );
+        return;
       }
       const project = await this.taskService.addProject(
         payload,
@@ -377,11 +377,11 @@ export class BotCommands {
 TASKS:
 STATUS: FINISHED | TODO | IN_PROGRESS
 
-/addProject title:STRING - добавить проект
+/addProject TITLE - добавить проект
 /tasks [status:STATUS] - Получить все задачи
 /myTasks [status:STATUS] - Получить все задачи, где ты исполнитель
 /assign taskId:NUMBER to:USERNAME - Назначить задачу на USERNAME
-/addTask title:STRING [project_id:NUMBER] - добавить задачу
+/addTask TITLE - добавить задачу
 /deleteTask id:NUMBER - удалить задачу
 /updateStatus taskId:NUMBER status:STATUS - обновить статус задачи
 /finish taskId:NUMBER - завершить задачу

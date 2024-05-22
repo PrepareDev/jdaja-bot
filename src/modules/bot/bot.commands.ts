@@ -340,6 +340,33 @@ export class BotCommands {
     }
   }
 
+  @Command('addToProject')
+  public async addToProject(@Ctx() ctx: Context & CommandContextExtn) {
+    try {
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
+      if (!flags?.taskId || !flags?.projectId) {
+        await ctx.sendMessage(
+          'You should provide `taskId` and `projectId` flag\nUSAGE: /addToProject taskId:TASK_ID projectId:PROJECT_ID',
+          {
+            message_thread_id: ctx.message?.message_thread_id,
+          },
+        );
+      }
+      await this.taskService.addToProject(
+        parseInt(flags.taskId),
+        parseInt(flags.projectId),
+        ctx.from!.username ?? ctx.from!.first_name,
+      );
+      await ctx.sendMessage('Task added to project');
+    } catch (e) {
+      this.logger.error(`[AddToProject] Message: ${ctx.text}\nError: ${e}`);
+      await ctx.sendMessage(
+        'Error while executing command /addToProject. Check logs',
+        { message_thread_id: ctx.message?.message_thread_id },
+      );
+    }
+  }
+
   @Command('addProject')
   public async addProject(@Ctx() ctx: Context & CommandContextExtn) {
     try {

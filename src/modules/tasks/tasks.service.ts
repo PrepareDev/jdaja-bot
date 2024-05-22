@@ -45,6 +45,21 @@ export class TasksService {
     });
   }
 
+  public getProjects(by: string) {
+    this.logger.log(`[GetProjects] { by: ${by} }`);
+    return this.db.query.projectTable.findMany();
+  }
+
+  public addToProject(taskId: number, projectId: number, by: string) {
+    this.logger.log(
+      `[AddToProject] { taskId: ${taskId}, projectId: ${taskId}, by: ${by} }`,
+    );
+    return this.db
+      .update(schema.taskTable)
+      .set({ projectId })
+      .where(eq(schema.taskTable.id, taskId));
+  }
+
   public getTasksByAssignee(
     username: string,
     filters?: {

@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { SelectTask } from '../tasks/drizzle.schema';
+import { SelectProject, SelectTask } from '../tasks/drizzle.schema';
 
 @Injectable()
 export class BotService {
-  public parseFlags(payload: string) {
+  public parseFlags(args: string[]) {
     const flags: Record<string, string> = {};
-    payload
-      .split(' ')
+    args
       .map((option) => option.split(':'))
       .forEach(([k, v]) => {
         flags[k] = v;
@@ -17,7 +16,16 @@ export class BotService {
   public formatTasks(tasks: SelectTask[]) {
     return (
       'Tasks\n' +
-      tasks.map((t) => `${t.id}. ${t.title} - STATUS: ${t.status}`).join('\n')
+      tasks
+        .map(
+          (t) =>
+            `${t.id}. ${t.title} - STATUS: ${t.status} ASSIGNED: ${t.assignedUser?.slice(1)}`,
+        )
+        .join('\n')
     );
+  }
+
+  public formatProjects(projects: SelectProject[]) {
+    return 'Projects\n' + projects.map((p) => `${p.id}. ${p.title}`).join('\n');
   }
 }

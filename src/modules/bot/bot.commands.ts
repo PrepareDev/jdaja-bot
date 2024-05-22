@@ -71,8 +71,7 @@ export class BotCommands {
   @Command('tasks')
   public async getAllTasks(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const options = ctx.payload;
-      const flags = this.service.parseFlags(options);
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
 
       const tasks = await this.taskService.getTasks(
         ctx.from!.username ?? ctx.from!.first_name,
@@ -100,8 +99,7 @@ export class BotCommands {
   @Command('addTask')
   public async addTask(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const options = ctx.payload;
-      const flags = this.service.parseFlags(options);
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
 
       if (!flags?.title) {
         await ctx.sendMessage(
@@ -133,7 +131,7 @@ export class BotCommands {
   @Command('assign')
   public async assignTask(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const flags = this.service.parseFlags(ctx.payload);
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
 
       if (!flags?.taskId || !flags?.to) {
         await ctx.sendMessage(
@@ -160,10 +158,49 @@ export class BotCommands {
     }
   }
 
+  @Command('addToProject')
+  public async assignTaskToProject(@Ctx() ctx: Context & CommandContextExtn) {
+    try {
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
+      if (!flags.taskId || !flags.projectId) {
+        await ctx.sendMessage(
+          'You should provide `taskId`, and `projectId` flags\nUSAGE: /addToProject taskId:TASK_ID projectId:PROJECT_ID',
+          {
+            message_thread_id: ctx.message?.message_thread_id,
+          },
+        );
+      }
+    } catch (e) {
+      this.logger.error(
+        `[AssignTaskToProject] Message: ${ctx.text}\nError: ${e}`,
+      );
+      await ctx.sendMessage(
+        'Error while executing command /addToProject. Check logs',
+        { message_thread_id: ctx.message?.message_thread_id },
+      );
+    }
+  }
+
+  @Command('projects')
+  public async getProjects(@Ctx() ctx: Context & CommandContextExtn) {
+    try {
+      const projects = await this.taskService.getProjects(
+        ctx.from!.username ?? ctx.from!.first_name,
+      );
+      await ctx.sendMessage(this.service.formatProjects(projects));
+    } catch (e) {
+      this.logger.error(`[GetProjects] Message: ${ctx.text}\nError: ${e}`);
+      await ctx.sendMessage(
+        'Error while executing command /projects. Check logs',
+        { message_thread_id: ctx.message?.message_thread_id },
+      );
+    }
+  }
+
   @Command('myTasks')
   public async getMyTasks(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const flags = this.service.parseFlags(ctx.payload);
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
 
       const userTasks = await this.taskService.getTasksByAssignee(
         '@' + (ctx.from!.username ?? ctx.from!.first_name),
@@ -189,7 +226,7 @@ export class BotCommands {
   @Command('deleteTask')
   public async deleteTask(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const flags = this.service.parseFlags(ctx.payload);
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
       if (!flags?.id) {
         await ctx.sendMessage(
           'You should provide `id` flag\nUSAGE: /deleteTask id:TASK_ID',
@@ -217,7 +254,7 @@ export class BotCommands {
   @Command('updateStatus')
   public async updateTaskStatus(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const flags = this.service.parseFlags(ctx.payload);
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
       if (!flags?.taskId || !flags?.status) {
         await ctx.sendMessage(
           'You should provide `taskId` flag\nUSAGE: /updateStatus taskId:TASK_ID status:NEW_STATUS',
@@ -247,7 +284,7 @@ export class BotCommands {
   @Command('finish')
   public async finishTask(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const flags = this.service.parseFlags(ctx.payload);
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
       if (!flags?.taskId || !flags?.status) {
         await ctx.sendMessage(
           'You should provide `taskId` flag\nUSAGE: /finish taskId:TASK_ID',
@@ -277,7 +314,7 @@ export class BotCommands {
   @Command('workOn')
   public async workOnTask(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const flags = this.service.parseFlags(ctx.payload);
+      const flags = this.service.parseFlags(ctx.payload.split(' '));
       if (!flags?.taskId || !flags?.status) {
         await ctx.sendMessage(
           'You should provide `taskId` flag\nUSAGE: /workOn taskId:TASK_ID',
@@ -307,17 +344,17 @@ export class BotCommands {
   @Command('addProject')
   public async addProject(@Ctx() ctx: Context & CommandContextExtn) {
     try {
-      const flags = this.service.parseFlags(ctx.payload);
-      if (!flags.title) {
+      const payload = ctx.payload.trim();
+      if (payload.length < 1) {
         await ctx.sendMessage(
-          'You should provide `title` flag\nUSAGE: /addProject title:STRING',
+          'You should provide `title` as positional argument\nUSAGE: /addProject TITLE',
           {
             message_thread_id: ctx.message?.message_thread_id,
           },
         );
       }
       const project = await this.taskService.addProject(
-        flags.title,
+        payload,
         ctx.from!.username ?? ctx.from!.first_name,
       );
       await ctx.sendMessage('Project with id: ' + project.id + ' created.');
@@ -349,6 +386,8 @@ STATUS: FINISHED | TODO | IN_PROGRESS
 /updateStatus taskId:NUMBER status:STATUS - обновить статус задачи
 /finish taskId:NUMBER - завершить задачу
 /workOn taskId:NUMBER - взять задачу в работу
+/projects - Получить список проектов
+/addToProject taskId:NUMBER projectId:NUMBER - Добавить задачу в проект
 `);
     } catch (e) {
       this.logger.error(`[HELP] Message: ${ctx.text}\nError: ${e}`);

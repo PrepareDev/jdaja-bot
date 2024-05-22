@@ -146,7 +146,7 @@ export class BotCommands {
       }
       await this.taskService.assignUser(
         parseInt(flags.taskId),
-        '@' + flags.to,
+        flags.to,
         ctx.from!.username ?? ctx.from!.first_name,
       );
       await ctx.sendMessage(`Assigned task ${flags.taskId} to ${flags.to}`, {
